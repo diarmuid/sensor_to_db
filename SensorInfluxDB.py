@@ -32,6 +32,9 @@ class SensorData(object):
         return "Location:{} Measurement:{} Value:{} Time:{}".format(self.location, self.measurement, self.value, self.time)
 
 
+MAX_POINTS_PER_ACCESS = 50
+
+
 class SensorInfluxDB(InfluxDBClient):
 
     def __init__(self, inifile):
@@ -65,37 +68,35 @@ class SensorInfluxDB(InfluxDBClient):
             influxdb_password = parser.get("influxdb", "INFLUXDB_PASSWORD")
             return influxdb_address, influxdb_user, influxdb_password
         else:
+
             return None, None, None
 
     def cache_and_send(self, point):
+        """
+        Cache a point and send them when enough are cached
+        :param point:
+        :return:
+        """
         self.points.append(point)
         logging.debug("Total points = {}".format(len(self.points)))
         if len(self.points) % self.cache_count == 0:
             json_points = []
+            # Convert the points to json txt
             for p in self.points:
                 json_points.append(p.to_json())
 
+            # Now send them
             try:
-                # Can I see the database
-                self.ping()
+                self.write_points(json_points)
             except Exception as e:
+                # Try and connect and next time around upload the points
+                logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
                 try:
                     self._init_influxdb_database()
-                except Exception as e:
-                    logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
-            else:
-                try:
-                    self.write_points(json_points)
-                except Exception as e:
-                    # Try and connect and next time around upload the points
-                    logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
-                    try:
-                        self._init_influxdb_database()
-                    except:
-                        pass
-                else:
+                except:
                     pass
-                finally:
-                    self.points = []
-                    for p in json_points:
-                        logging.debug("Send {} to influx".format(repr(p)))
+            else:
+                # Clear the cache
+                self.points = []
+                for p in json_points:
+                    logging.debug("Sent {} to influx".format(repr(p)))
