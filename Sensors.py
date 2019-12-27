@@ -10,10 +10,11 @@ def i2c():
 
 
 class Sensors(object):
-    def __init__(self, type, i2c=None, prefix=None):
+    def __init__(self, type, i2c=None, prefix=""):
         self._type = None
         self.i2c = i2c
         self.sensor = None
+        self._type = None
         self.type = type
         self.prefix = prefix
         self.parameters = []
@@ -32,7 +33,7 @@ class Sensors(object):
             self._type = value
         elif value == "DS18B20":
             self.sensor = DS18B20()
-            self.type = value
+            self._type = value
         elif value == "mcp9808":
             if self.i2c is None:
                 raise Exception("mcp9808 requires an i2c bus")
