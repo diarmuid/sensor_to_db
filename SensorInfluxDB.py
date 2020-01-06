@@ -1,6 +1,8 @@
 from influxdb import InfluxDBClient
 from configparser import ConfigParser
 import datetime
+import logging
+from collections import deque
 
 
 class SensorData(object):
@@ -9,7 +11,7 @@ class SensorData(object):
         self.measurement = measurement
         self.value = value
         if time is None:
-            self.time = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%dT%H:%M:%SZ"),
+            self.time = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%dT%H:%M:%SZ")
         else:
             self.time = time
 
@@ -26,6 +28,12 @@ class SensorData(object):
             }
         return json_body
 
+    def __repr__(self):
+        return "Location:{} Measurement:{} Value:{} Time:{}".format(self.location, self.measurement, self.value, self.time)
+
+
+MAX_POINTS_PER_ACCESS = 50
+
 
 class SensorInfluxDB(InfluxDBClient):
 
@@ -33,9 +41,10 @@ class SensorInfluxDB(InfluxDBClient):
         addr, user, pw = SensorInfluxDB.get_login_details(inifile)
         if addr is None:
             raise Exception("No login details in the ini file")
-        super(SensorInfluxDB, self).__init__(addr, 8086, user, pw, None)
-        self._init_influxdb_database()
-        self.points = []
+        super().__init__(addr, 8086, user, pw, None)
+        #self._init_influxdb_database()
+        self.points = deque(maxlen=300)
+        self.cache_count = 10
 
     def _init_influxdb_database(self):
         """
@@ -59,17 +68,35 @@ class SensorInfluxDB(InfluxDBClient):
             influxdb_password = parser.get("influxdb", "INFLUXDB_PASSWORD")
             return influxdb_address, influxdb_user, influxdb_password
         else:
+
             return None, None, None
 
     def cache_and_send(self, point):
+        """
+        Cache a point and send them when enough are cached
+        :param point:
+        :return:
+        """
         self.points.append(point)
-        if len(self.points) % 10 == 0:
+        logging.debug("Total points = {}".format(len(self.points)))
+        if len(self.points) % self.cache_count == 0:
             json_points = []
+            # Convert the points to json txt
             for p in self.points:
                 json_points.append(p.to_json())
 
-            if not self.ping():
-                self._init_influxdb_database()
-
-            if self.write_points(json_points):
-               self.points = []
+            # Now send them
+            try:
+                self.write_points(json_points)
+            except Exception as e:
+                # Try and connect and next time around upload the points
+                logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
+                try:
+                    self._init_influxdb_database()
+                except:
+                    pass
+            else:
+                # Clear the cache
+                self.points = []
+                for p in json_points:
+                    logging.debug("Sent {} to influx".format(repr(p)))
