@@ -132,8 +132,8 @@ def main():
         client.fetch_data()
     # Loop through historical dates
     days = []
-    start_day = "12 Nov 2019"
-    for d in range(6):
+    start_day = "09 Dec 2019"
+    for d in range(30):
         _d = datetime.datetime.strptime(start_day, "%d %b %Y") + datetime.timedelta(days=d)
         days.append(datetime.datetime.strftime(_d, "%d %b %Y"))
 

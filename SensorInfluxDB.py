@@ -33,7 +33,7 @@ class SensorInfluxDB(InfluxDBClient):
         addr, user, pw = SensorInfluxDB.get_login_details(inifile)
         if addr is None:
             raise Exception("No login details in the ini file")
-        super(SensorInfluxDB).__init__(addr, 8086, user, pw, None)
+        super(SensorInfluxDB, self).__init__(addr, 8086, user, pw, None)
         self._init_influxdb_database()
         self.points = []
 
