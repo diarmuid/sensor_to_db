@@ -87,7 +87,7 @@ class SensorInfluxDB(InfluxDBClient):
 
             # Now send them
             try:
-                self.write_points(json_points)
+                self.write_points(json_points, batch_size=100)
             except Exception as e:
                 # Try and connect and next time around upload the points
                 logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
