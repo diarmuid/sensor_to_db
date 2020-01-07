@@ -2,7 +2,7 @@ import SensorInfluxDB
 import datetime
 from configparser import ConfigParser
 from pylinky import LinkyClient
-
+import argparse
 
 class LinkyClientExt(LinkyClient):
     @staticmethod
@@ -42,8 +42,13 @@ class LinkyClientExt(LinkyClient):
         return influx_points
 
 
-db = SensorInfluxDB.SensorInfluxDB(inifile="secret.ini")
-username, password = LinkyClientExt.get_login_details("secret.ini")
+parser = argparse.ArgumentParser(description='Read a electricity sensor and push to the database')
+parser.add_argument('--secret', type=str, required=True, help="path to the secret file")
+args = parser.parse_args()
+
+
+db = SensorInfluxDB.SensorInfluxDB(inifile=args.secret)
+username, password = LinkyClientExt.get_login_details(args.secret)
 client = LinkyClientExt(username, password)
 try:
     client.login()
