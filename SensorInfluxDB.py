@@ -46,7 +46,7 @@ class SensorInfluxDB(InfluxDBClient):
         self.points = deque(maxlen=300)
         self.cache_count = 10
 
-    def _init_influxdb_database(self):
+    def connect_to_db(self):
         """
         Connect to an influx database
         :param influxdb_client:
@@ -92,7 +92,7 @@ class SensorInfluxDB(InfluxDBClient):
                 # Try and connect and next time around upload the points
                 logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
                 try:
-                    self._init_influxdb_database()
+                    self.connect_to_db()
                 except:
                     pass
             else:

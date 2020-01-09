@@ -4,6 +4,7 @@ from configparser import ConfigParser
 from pylinky import LinkyClient
 import argparse
 import json
+import logging
 
 class LinkyClientExt(LinkyClient):
     @staticmethod
@@ -52,8 +53,10 @@ parser = argparse.ArgumentParser(description='Read a electricity sensor and push
 parser.add_argument('--secret', type=str, required=True, help="path to the secret file")
 args = parser.parse_args()
 
-
+logging.basicConfig(level=logging.INFO)
 db = SensorInfluxDB.SensorInfluxDB(inifile=args.secret)
+db.connect_to_db()
+
 username, password = LinkyClientExt.get_login_details(args.secret)
 client = LinkyClientExt(username, password)
 try:
@@ -64,5 +67,5 @@ except BaseException as exp:
 else:
     client.fetch_data()
 
-yesterday = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=1), "%d %b %Y")
-db.cache_and_send(client.get_daily_details(yesterday, "beaumont"))
+yesterday = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=2), "%d %b %Y")
+db.cache_and_send(client.get_daily_details(yesterday, "beaumont", "dump"))
