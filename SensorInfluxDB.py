@@ -71,23 +71,23 @@ class SensorInfluxDB(InfluxDBClient):
 
             return None, None, None
 
-    def cache_and_send(self, point):
+    def cache_and_send(self, points, no_cache=False):
         """
         Cache a point and send them when enough are cached
-        :param point:
+        :param point: list[int]
         :return:
         """
-        self.points.append(point)
+        self.points += points
         logging.debug("Total points = {}".format(len(self.points)))
-        if len(self.points) % self.cache_count == 0:
+        if (len(self.points) % self.cache_count == 0 and no_cache==True) or no_cache == False:
             json_points = []
             # Convert the points to json txt
             for p in self.points:
                 json_points.append(p.to_json())
-
+            #print("Sending points = {}".format(len(json_points)))
             # Now send them
             try:
-                self.write_points(json_points, batch_size=100)
+                self.write_points(json_points, batch_size=MAX_POINTS_PER_ACCESS)
             except Exception as e:
                 # Try and connect and next time around upload the points
                 logging.debug("Failed to connect to influx. ({}) Caching points".format(e))

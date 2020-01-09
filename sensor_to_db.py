@@ -39,8 +39,10 @@ for sensor_type in args.sensor:
 db.cache_count = 10 * len(sensors)
 while True:
     for sensor in sensors:
+        points = []
         for reading in sensor.get_readings():
             data_point = SensorInfluxDB.SensorData(location=args.location, measurement=reading[0], value=reading[1])
             logging.debug("Read {}".format(repr(data_point)))
-            db.cache_and_send(data_point)
+            points.append(data_point)
+        db.cache_and_send(points, no_cache=True)
     time.sleep(args.rate)

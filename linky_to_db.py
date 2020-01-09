@@ -3,6 +3,7 @@ import datetime
 from configparser import ConfigParser
 from pylinky import LinkyClient
 import argparse
+import json
 
 class LinkyClientExt(LinkyClient):
     @staticmethod
@@ -16,7 +17,7 @@ class LinkyClientExt(LinkyClient):
         else:
             return None, None
 
-    def get_daily_details(self, day, location):
+    def get_daily_details(self, day, location, to_json_file=None):
         """
         Get the details of a day and return as a json ojects
         :type client: LinkyClient
@@ -31,6 +32,11 @@ class LinkyClientExt(LinkyClient):
         et = datetime.datetime.strptime(start_date, "%d %b %Y") + extra_days
         # print("Downloading {}".format(st))
         json_output = self.get_data_per_period(period_type="hourly", start=st, end=et)
+        if to_json_file:
+            jf = open("{}/{:04d}_{:02d}_{:02d}.json".format(to_json_file, st.year, st.month, st.day), mode="w")
+            jf.write(json.dumps(json_output, indent=2))
+            jf.close()
+
         influx_points = []
         for dp in json_output["data"]:
             if dp["ordre"] <= 48:
@@ -59,5 +65,4 @@ else:
     client.fetch_data()
 
 yesterday = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=1), "%d %b %Y")
-for point in client.get_daily_details(yesterday, "beaumont"):
-    db.cache_and_send(point)
+db.cache_and_send(client.get_daily_details(yesterday, "beaumont"))
