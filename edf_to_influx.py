@@ -1,3 +1,5 @@
+# Mostly deprecated. Some fewautres not yet ported to linky_to_db
+
 import sys
 import json
 import datetime

@@ -1,3 +1,8 @@
+# Pull hourly consumption usage from ENEDIS and push to an InfluxDB data base
+# Put this in a crontabl job to be run after midnight. It will pull down the
+# data from the previous night and push it to Influxdb
+
+
 import SensorInfluxDB
 import datetime
 from configparser import ConfigParser

@@ -1,3 +1,6 @@
+# This is a script to manage the influx db via the python interface.
+# Only for occassional housekeeping
+
 from configparser import ConfigParser
 from pylinky import LinkyClient
 from influxdb import InfluxDBClient

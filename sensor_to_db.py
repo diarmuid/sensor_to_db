@@ -1,5 +1,8 @@
 """
 Read the sensors and push the data to a database
+Pass in multiple sensors on the command line. Data will be read from these sensors at the rate supplied and pushed to
+Influx db.
+Run this as a service
 """
 
 import Sensors
@@ -44,5 +47,5 @@ while True:
             data_point = SensorInfluxDB.SensorData(location=args.location, measurement=reading[0], value=reading[1])
             logging.debug("Read {}".format(repr(data_point)))
             points.append(data_point)
-        db.cache_and_send(points, no_cache=True)
+        db.cache_and_send(points)
     time.sleep(args.rate)

@@ -1,3 +1,7 @@
+'''
+Wrapper to make sensors look similar
+'''
+
 from ds18b20 import DS18B20
 import adafruit_bmp280
 import adafruit_mcp9808
