@@ -68,4 +68,4 @@ else:
     client.fetch_data()
 
 yesterday = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=1), "%d %b %Y")
-db.cache_and_send(client.get_daily_details(yesterday, "beaumont", "dump"))
+db.cache_and_send(client.get_daily_details(yesterday, "beaumont"))
