@@ -43,9 +43,11 @@ db.cache_count = 10 * len(sensors)
 while True:
     for sensor in sensors:
         points = []
-        for reading in sensor.get_readings():
-            data_point = SensorInfluxDB.SensorData(location=args.location, measurement=reading[0], value=reading[1])
-            logging.debug("Read {}".format(repr(data_point)))
-            points.append(data_point)
-        db.cache_and_send(points)
+        readings = sensor.get_readings()
+        if readings is not None:
+            for reading in readings:
+                data_point = SensorInfluxDB.SensorData(location=args.location, measurement=reading[0], value=reading[1])
+                logging.debug("Read {}".format(repr(data_point)))
+                points.append(data_point)
+            db.cache_and_send(points)
     time.sleep(args.rate)
