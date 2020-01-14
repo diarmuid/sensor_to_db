@@ -7,7 +7,7 @@ import adafruit_bmp280
 import adafruit_mcp9808
 import busio
 import board
-
+import logging
 
 def i2c():
     return busio.I2C(board.SCL, board.SDA)
@@ -36,7 +36,12 @@ class Sensors(object):
             self.sensor = adafruit_bmp280.Adafruit_BMP280_I2C(self.i2c)
             self._type = value
         elif value == "DS18B20":
-            self.sensor = DS18B20()
+            try:
+                self.sensor = DS18B20()
+            except Exception as e:
+                logging.error("Failed to open DS18B20. {}".format(e))
+                self.sensor = None
+
             self._type = value
         elif value == "mcp9808":
             if self.i2c is None:
