@@ -12,10 +12,11 @@ import argparse
 import logging
 
 parser = argparse.ArgumentParser(description='Read a sensor and push to the database')
-parser.add_argument('--sensor', type=str, required=True, choices=["bmp280", "DS18B20"],
+parser.add_argument('--sensor', type=str, required=True, choices=["bmp280", "DS18B20", "nk01b"],
                     action="append", help='sensor type connected')
 parser.add_argument('--location', type=str, required=True, help="The location of the sensor")
 parser.add_argument('--rate', type=int, required=False, default=1, help="The rate in Hz to read the sensor")
+parser.add_argument('--noi2c', action='store_true', default=False)
 parser.add_argument('--debug', action="store_true", help="debug mode ")
 args = parser.parse_args()
 
@@ -28,7 +29,10 @@ else:
     logging.basicConfig(level=logging.INFO)
 
 # Create i2c
-i2c_bus = Sensors.i2c()
+if not args.noi2c:
+    i2c_bus = Sensors.i2c()
+else:
+    i2c_bus = None
 db = SensorInfluxDB.SensorInfluxDB(inifile=secret)
 
 sensors = []
@@ -37,6 +41,8 @@ for sensor_type in args.sensor:
     sensor = Sensors.Sensors(type=sensor_type, i2c=i2c_bus)
     if sensor_type == "DS18B20":
         sensor.prefix = "outside"
+    elif sensor_type == "nk01b":
+        sensor.prefix == "outside"
     sensors.append(sensor)
 
 db.cache_count = 10 * len(sensors)

@@ -8,6 +8,7 @@ import adafruit_mcp9808
 import busio
 import board
 import logging
+from Newkiton import Newkiton
 
 def i2c():
     return busio.I2C(board.SCL, board.SDA)
@@ -48,6 +49,9 @@ class Sensors(object):
                 raise Exception("mcp9808 requires an i2c bus")
             self.sensor = adafruit_mcp9808.MCP9808(self.i2c)
             self._type = value
+        elif value == "nk01b":
+            self.sensor = Newkiton.Newkiton(deviceAddr="8e:f9:00:00:00:ed")
+            self._type = value
         else:
             raise Exception("Sensor not supported")
 
@@ -74,5 +78,13 @@ class Sensors(object):
             except:
                 return None
             else:
-             return [("{}temperature".format(self.prefix), temp)]
+                return [("{}temperature".format(self.prefix), temp)]
+        elif self.type == "nk01b":
+            try:
+                temp = self.sensor.temperature()
+            except:
+                return None
+            else:
+                return [("{}temperature".format(self.prefix), temp)]
+
 
