@@ -42,7 +42,7 @@ for sensor_type in args.sensor:
     if sensor_type == "DS18B20":
         sensor.prefix = "outside"
     elif sensor_type == "nk01b":
-        sensor.prefix == "outside"
+        sensor.prefix = "outside"
     sensors.append(sensor)
 
 db.cache_count = 10 * len(sensors)

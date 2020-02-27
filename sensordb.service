@@ -7,7 +7,8 @@ Restart=always
 RestartSec=1
 User=pi
 WorkingDirectory=/home/pi/sensor_to_db
-ExecStart=/home/pi/sensor_to_db/env/bin/python /home/pi/sensor_to_db/sensor_to_db.py  --location house --sensor bmp280 --sensor DS18B20
+#ExecStart=/home/pi/sensor_to_db/venv3/bin/python /home/pi/sensor_to_db/sensor_to_db.py  --location house --sensor bmp280 --sensor DS18B20
+ExecStart=/home/pi/sensor_to_db/venv3/bin/python /home/pi/sensor_to_db/sensor_to_db.py  --sensor nk01b --location beaumont  --noi2c --rate 30
 Type=simple
 PIDFile=/var/log/sensor_to_db.pid
 

@@ -11,7 +11,7 @@ class SensorData(object):
         self.measurement = measurement
         self.value = value
         if time is None:
-            self.time = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%dT%H:%M:%SZ")
+            self.time = datetime.datetime.strftime(datetime.datetime.utcnow(), "%Y-%m-%dT%H:%M:%SZ")
         else:
             self.time = time
 
@@ -44,7 +44,7 @@ class SensorInfluxDB(InfluxDBClient):
         super().__init__(addr, 8086, user, pw, None)
         #self._init_influxdb_database()
         self.points = deque(maxlen=300)
-        self.cache_count = 10
+        self.cache_count = 30
 
     def connect_to_db(self):
         """
@@ -79,7 +79,7 @@ class SensorInfluxDB(InfluxDBClient):
         """
         self.points += points
         logging.debug("Total points = {}".format(len(self.points)))
-        if (len(self.points) % self.cache_count == 0 and no_cache==True) or no_cache == False:
+        if (len(self.points) % self.cache_count == 0 and no_cache==False) or no_cache == True:
             json_points = []
             # Convert the points to json txt
             for p in self.points:
@@ -87,7 +87,7 @@ class SensorInfluxDB(InfluxDBClient):
             #print("Sending points = {}".format(len(json_points)))
             # Now send them
             try:
-                self.write_points(json_points, batch_size=MAX_POINTS_PER_ACCESS)
+                self.write_points(json_points, batch_size=MAX_POINTS_PER_ACCESS, time_precision="s")
             except Exception as e:
                 # Try and connect and next time around upload the points
                 logging.debug("Failed to connect to influx. ({}) Caching points".format(e))
