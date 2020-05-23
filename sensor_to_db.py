@@ -12,9 +12,10 @@ import argparse
 import logging
 
 parser = argparse.ArgumentParser(description='Read a sensor and push to the database')
-parser.add_argument('--sensor', type=str, required=True, choices=["bmp280", "DS18B20", "nk01b"],
+parser.add_argument('--sensor', type=str, required=True, choices=["bmp280", "DS18B20", "nk01b", "mcp9808"],
                     action="append", help='sensor type connected')
 parser.add_argument('--location', type=str, required=True, help="The location of the sensor")
+parser.add_argument('--prefix', type=str, required=False, help="The prefix of the reading (outside/inside/upstairs)")
 parser.add_argument('--rate', type=int, required=False, default=1, help="The rate in Hz to read the sensor")
 parser.add_argument('--noi2c', action='store_true', default=False)
 parser.add_argument('--debug', action="store_true", help="debug mode ")
@@ -39,7 +40,9 @@ sensors = []
 for sensor_type in args.sensor:
     logging.debug("Creating sensor type {}".format(sensor_type))
     sensor = Sensors.Sensors(type=sensor_type, i2c=i2c_bus)
-    if sensor_type == "DS18B20":
+    if args.prefix:
+        sensor.prefix = args.prefix
+    elif sensor_type == "DS18B20":
         sensor.prefix = "outside"
     elif sensor_type == "nk01b":
         sensor.prefix = "outside"
