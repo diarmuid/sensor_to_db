@@ -12,17 +12,18 @@ import argparse
 import logging
 
 parser = argparse.ArgumentParser(description='Read a sensor and push to the database')
-parser.add_argument('--sensor', type=str, required=True, choices=["bmp280", "DS18B20", "nk01b", "mcp9808"],
+parser.add_argument('--sensor', type=str, required=True, choices=["bmp280", "DS18B20", "nk01b", "mcp9808", "thermobeacon"],
                     action="append", help='sensor type connected')
 parser.add_argument('--location', type=str, required=True, help="The location of the sensor")
 parser.add_argument('--prefix', type=str, required=False, help="The prefix of the reading (outside/inside/upstairs)")
 parser.add_argument('--rate', type=int, required=False, default=1, help="The rate in Hz to read the sensor")
 parser.add_argument('--noi2c', action='store_true', default=False)
 parser.add_argument('--debug', action="store_true", help="debug mode ")
+parser.add_argument('--secret', type=str, required=True)
 args = parser.parse_args()
 
 # location
-secret = "secret.ini"
+secret = args.secret
 # Logging level
 if args.debug:
     logging.basicConfig(level=logging.DEBUG)
@@ -44,7 +45,7 @@ for sensor_type in args.sensor:
         sensor.prefix = args.prefix
     elif sensor_type == "DS18B20":
         sensor.prefix = "outside"
-    elif sensor_type == "nk01b":
+    elif sensor_type == "nk01b" or sensor_type == "thermobeacon":
         sensor.prefix = "outside"
     sensors.append(sensor)
 
@@ -58,5 +59,5 @@ while True:
                 data_point = SensorInfluxDB.SensorData(location=args.location, measurement=reading[0], value=reading[1])
                 logging.debug("Read {}".format(repr(data_point)))
                 points.append(data_point)
-            db.cache_and_send(points)
+            db.cache_and_send(points, no_cache=args.debug)
     time.sleep(args.rate)

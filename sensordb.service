@@ -5,10 +5,11 @@ After=network.target
 [Service]
 Restart=always
 RestartSec=1
-User=pi
+User=root
 WorkingDirectory=/home/pi/sensor_to_db
-#ExecStart=/home/pi/sensor_to_db/venv3/bin/python /home/pi/sensor_to_db/sensor_to_db.py  --location house --sensor bmp280 --sensor DS18B20
-ExecStart=/home/pi/sensor_to_db/venv3/bin/python /home/pi/sensor_to_db/sensor_to_db.py --sensor mcp9808 --location house  --rate 2 --prefix upstairs
+#ExecStart=/home/pi/sensor_to_db/venv3/bin/python /home/pi/sensor_to_db/sensor_to_db.py --sensor mcp9808 --location house  --rate 2 --prefix upstairs
+ExecStart=/home/pi/sensor_to_db/venv3/bin/python /home/pi/sensor_to_db/sensor_to_db.py  --sensor thermobeacon --location beaumont  --noi2c --rate 30 --secret /home/pi/sensor_to_db/secret.ini
+
 Type=simple
 PIDFile=/var/log/sensor_to_db.pid
 

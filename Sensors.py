@@ -9,6 +9,7 @@ import busio
 import board
 import logging
 from Newkiton import Newkiton
+from ThermoBeacon import ThermoBeacon
 
 def i2c():
     return busio.I2C(board.SCL, board.SDA)
@@ -52,6 +53,9 @@ class Sensors(object):
         elif value == "nk01b":
             self.sensor = Newkiton.Newkiton(deviceAddr="8e:f9:00:00:00:ed")
             self._type = value
+        elif value == "thermobeacon":
+            self.sensor = ThermoBeacon.ThermoBeacon(deviceAddr="FA:AC:00:00:14:3A")
+            self._type = value
         else:
             raise Exception("Sensor not supported")
 
@@ -86,5 +90,12 @@ class Sensors(object):
                 return None
             else:
                 return [("{}temperature".format(self.prefix), temp)]
-
+        elif self.type == "thermobeacon":
+            try:
+                temp, hum = self.sensor.temperature_and_humidity()
+            except Exception as e:
+                logging.debug(e)
+                return None
+            else:
+                return [("{}temperature".format(self.prefix), temp)]
 
